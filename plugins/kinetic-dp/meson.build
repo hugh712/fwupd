@@ -17,6 +17,7 @@ shared_module('fu_plugin_kinetic_dp',
     'fu-kinetic-dp-aux-dpcd.c',
     'fu-kinetic-dp-aux-isp.c',
     'fu-kinetic-dp-secure-aux-isp.c',
+    'fu-kinetic-dp-puma-aux-isp.c',
   ],
   include_directories : [
     root_incdir,
