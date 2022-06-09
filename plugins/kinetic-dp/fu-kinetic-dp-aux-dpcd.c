@@ -6,64 +6,78 @@
  */
 
 #include "fu-kinetic-dp-aux-dpcd.h"
+
 #include <fwupdplugin.h>
 
 gboolean
 fu_kinetic_dp_aux_dpcd_read_oui(FuKineticDpConnection *connection,
-                                                                                                    guint8 *buf,
-                                                                                                    guint32 buf_size,
-                                                                                                    GError **error)
+				guint8 *buf,
+				guint32 buf_size,
+				GError **error)
 {
-  g_debug("aux dpcd read OUI...");
-  if (buf_size < DPCD_SIZE_IEEE_OUI) {
-    g_set_error(error,FWUPD_ERROR,FWUPD_ERROR_INTERNAL,
-                              "aux dpcd read buffer size [%u] is too small to read IEEE OUI",buf_size);
-    return FALSE;
-  }
-  if (!fu_kinetic_dp_connection_read(connection,DPCD_ADDR_IEEE_OUI,
-                                                                         buf,DPCD_SIZE_IEEE_OUI,error)){
-    g_prefix_error(error, "aux dpcd read OUI failed: ");
-    return FALSE;
-  }
-  return TRUE;
+	g_debug("aux dpcd read OUI...");
+	if (buf_size < DPCD_SIZE_IEEE_OUI) {
+		g_set_error(error,
+			    FWUPD_ERROR,
+			    FWUPD_ERROR_INTERNAL,
+			    "aux dpcd read buffer size [%u] is too small to read IEEE OUI",
+			    buf_size);
+		return FALSE;
+	}
+	if (!fu_kinetic_dp_connection_read(connection,
+					   DPCD_ADDR_IEEE_OUI,
+					   buf,
+					   DPCD_SIZE_IEEE_OUI,
+					   error)) {
+		g_prefix_error(error, "aux dpcd read OUI failed: ");
+		return FALSE;
+	}
+	return TRUE;
 }
 
 gboolean
 fu_kinetic_dp_aux_dpcd_write_oui(FuKineticDpConnection *connection,
-                                                                                                     const guint8 *buf,
-                                                                                                     GError **error)
+				 const guint8 *buf,
+				 GError **error)
 {
-  g_debug("aux dpcd write OUI...");
-  if (!fu_kinetic_dp_connection_write(connection,  DPCD_ADDR_IEEE_OUI,
-                                                                          buf, DPCD_SIZE_IEEE_OUI, error)) {
-    g_prefix_error(error, "aux dpcd write OUI failed: ");
-    return FALSE;
-  }
-  return TRUE;
+	g_debug("aux dpcd write OUI...");
+	if (!fu_kinetic_dp_connection_write(connection,
+					    DPCD_ADDR_IEEE_OUI,
+					    buf,
+					    DPCD_SIZE_IEEE_OUI,
+					    error)) {
+		g_prefix_error(error, "aux dpcd write OUI failed: ");
+		return FALSE;
+	}
+	return TRUE;
 }
 
 gboolean
-fu_kinetic_dp_aux_dpcd_read_branch_id_str(
-                                                                                                    FuKineticDpConnection *connection,
-                                                                                                    guint8 *buf,
-                                                                                                    guint32 buf_size,
-                                                                                                    GError **error)
+fu_kinetic_dp_aux_dpcd_read_branch_id_str(FuKineticDpConnection *connection,
+					  guint8 *buf,
+					  guint32 buf_size,
+					  GError **error)
 {
-  g_debug("aux dpcd read branch_id_str...");
-  if (buf_size < DPCD_SIZE_BRANCH_DEV_ID_STR) {
-    g_set_error(error,FWUPD_ERROR,FWUPD_ERROR_INTERNAL,
-                        "aux dpcd read buffer size [%u] is too small to read branch ID string", buf_size);
-    return FALSE;
-  }
+	g_debug("aux dpcd read branch_id_str...");
+	if (buf_size < DPCD_SIZE_BRANCH_DEV_ID_STR) {
+		g_set_error(error,
+			    FWUPD_ERROR,
+			    FWUPD_ERROR_INTERNAL,
+			    "aux dpcd read buffer size [%u] is too small to read branch ID string",
+			    buf_size);
+		return FALSE;
+	}
 
-  /* Clear the buffer to all 0s as DP spec mentioned */
-  memset(buf, 0, DPCD_SIZE_BRANCH_DEV_ID_STR);
+	/* Clear the buffer to all 0s as DP spec mentioned */
+	memset(buf, 0, DPCD_SIZE_BRANCH_DEV_ID_STR);
 
-  if (!fu_kinetic_dp_connection_read(connection,
-                                                                        DPCD_ADDR_BRANCH_DEV_ID_STR,buf,
-                                                                        DPCD_SIZE_BRANCH_DEV_ID_STR, error)) {
-    g_prefix_error(error, "aux dpcd read branch device ID string failed: ");
-    return FALSE;
-  }
-  return TRUE;
+	if (!fu_kinetic_dp_connection_read(connection,
+					   DPCD_ADDR_BRANCH_DEV_ID_STR,
+					   buf,
+					   DPCD_SIZE_BRANCH_DEV_ID_STR,
+					   error)) {
+		g_prefix_error(error, "aux dpcd read branch device ID string failed: ");
+		return FALSE;
+	}
+	return TRUE;
 }

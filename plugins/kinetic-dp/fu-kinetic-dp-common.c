@@ -14,41 +14,33 @@
 const gchar *
 fu_kinetic_dp_mode_to_string(FuKineticDpMode mode)
 {
-  if (mode == FU_KINETIC_DP_MODE_DIRECT){
-    return "DIRECT";
-  }
-  if (mode == FU_KINETIC_DP_MODE_REMOTE){
-    return "REMOTE";
-  }
-  return NULL;
+	if (mode == FU_KINETIC_DP_MODE_DIRECT)
+		return "DIRECT";
+	if (mode == FU_KINETIC_DP_MODE_REMOTE)
+		return "REMOTE";
+	return NULL;
 }
 
 const gchar *
 fu_kinetic_dp_family_to_string(FuKineticDpFamily family)
 {
-  if (family == FU_KINETIC_DP_FAMILY_MUSTANG){
-    return "MUSTANG";
-  }
-  if (family == FU_KINETIC_DP_FAMILY_JAGUAR){
-    return "JAGUAR";
-  }
-  if (family == FU_KINETIC_DP_FAMILY_PUMA){
-    return "PUMA";
-  }
-  return NULL;
+	if (family == FU_KINETIC_DP_FAMILY_MUSTANG)
+		return "MUSTANG";
+	if (family == FU_KINETIC_DP_FAMILY_JAGUAR)
+		return "JAGUAR";
+	if (family == FU_KINETIC_DP_FAMILY_PUMA)
+		return "PUMA";
+	return NULL;
 }
 
 FuKineticDpFamily
 fu_kinetic_dp_chip_id_to_family(KtChipId chip_id)
 {
-  if (chip_id == KT_CHIP_MUSTANG_5200){
-    return FU_KINETIC_DP_FAMILY_MUSTANG;
-  }
-  if (chip_id == KT_CHIP_JAGUAR_5000){
-    return FU_KINETIC_DP_FAMILY_JAGUAR;
-  }
-  if (chip_id == KT_CHIP_PUMA_2900){
-    return FU_KINETIC_DP_FAMILY_PUMA;
-  }
-  return FU_KINETIC_DP_FAMILY_UNKNOWN;
+	if (chip_id == KT_CHIP_MUSTANG_5200)
+		return FU_KINETIC_DP_FAMILY_MUSTANG;
+	if (chip_id == KT_CHIP_JAGUAR_5000)
+		return FU_KINETIC_DP_FAMILY_JAGUAR;
+	if (chip_id == KT_CHIP_PUMA_2900)
+		return FU_KINETIC_DP_FAMILY_PUMA;
+	return FU_KINETIC_DP_FAMILY_UNKNOWN;
 }

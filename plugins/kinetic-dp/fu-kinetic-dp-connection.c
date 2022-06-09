@@ -26,78 +26,80 @@ G_DEFINE_TYPE(FuKineticDpConnection, fu_kinetic_dp_connection, G_TYPE_OBJECT)
 static void
 fu_kinetic_dp_connection_init(FuKineticDpConnection *self)
 {
-  g_debug("connection instance initialized.");
+	g_debug("connection instance initialized.");
 }
 
 static void
 fu_kinetic_dp_connection_class_init(FuKineticDpConnectionClass *klass)
 {
-  g_debug("connection class initialized.");
+	g_debug("connection class initialized.");
 }
 
 FuKineticDpConnection *
 fu_kinetic_dp_connection_new(gint fd)
 {
-  FuKineticDpConnection *self = g_object_new(FU_TYPE_KINETIC_DP_CONNECTION, NULL);
-  self->fd = fd;
-  g_debug("instantiate connection.");
-  return self;
+	FuKineticDpConnection *self = g_object_new(FU_TYPE_KINETIC_DP_CONNECTION, NULL);
+	self->fd = fd;
+	g_debug("instantiate connection.");
+	return self;
 }
 
 gboolean
 fu_kinetic_dp_connection_read(FuKineticDpConnection *self,
-                                                                                            guint32 offset,
-                                                                                            guint8 *buf,
-                                                                                            guint32 length,
-                                                                                            GError **error)
+			      guint32 offset,
+			      guint8 *buf,
+			      guint32 length,
+			      GError **error)
 {
-  //guint32 i;
-  g_return_val_if_fail(self != NULL, FALSE);
+	g_return_val_if_fail(self != NULL, FALSE);
 
-  if (lseek(self->fd, offset, SEEK_SET) != offset) {
-    g_set_error(error,G_IO_ERROR,G_IO_ERROR_INVALID_DATA,
-                              "Failed to lseek to 0x%x",offset);
-    return FALSE;
-  }
+	if (lseek(self->fd, offset, SEEK_SET) != offset) {
+		g_set_error(error,
+			    G_IO_ERROR,
+			    G_IO_ERROR_INVALID_DATA,
+			    "Failed to lseek to 0x%x",
+			    offset);
+		return FALSE;
+	}
 
-  if (read(self->fd, buf, length) != length) {
-    g_set_error(error,G_IO_ERROR,G_IO_ERROR_INVALID_DATA,
-                             "Failed to read 0x%x bytes",(guint)length);
-    return FALSE;
-  }
-  //g_debug("aux read from: 0x%x for %u bytes",offset,length);
-  //for(i = 0; i < length; i++){
-  //	g_debug("0x%x",buf[i]);
-  //}
-  return TRUE;
+	if (read(self->fd, buf, length) != length) {
+		g_set_error(error,
+			    G_IO_ERROR,
+			    G_IO_ERROR_INVALID_DATA,
+			    "Failed to read 0x%x bytes",
+			    (guint)length);
+		return FALSE;
+	}
+	return TRUE;
 }
 
 gboolean
 fu_kinetic_dp_connection_write(FuKineticDpConnection *self,
-                                                                                            guint32 offset,
-                                                                                            const guint8 *buf,
-                                                                                            guint32 length,
-                                                                                            GError **error)
+			       guint32 offset,
+			       const guint8 *buf,
+			       guint32 length,
+			       GError **error)
 {
-  //guint32 i;
-  guint32 bytes_wrote;
-  g_return_val_if_fail(self != NULL, FALSE);
+	guint32 bytes_wrote;
+	g_return_val_if_fail(self != NULL, FALSE);
 
-  if (lseek(self->fd, offset, SEEK_SET) != offset) {
-    g_set_error(error,G_IO_ERROR,G_IO_ERROR_INVALID_DATA,
-                             "Failed to lseek to 0x%x",offset);
-    return FALSE;
-  }
-  //g_debug("aux write start at: 0x%x for %u bytes",offset,length);
-  //for(i = 0; i < length; i++){
-  //	g_debug("0x%x",buf[i]);
-  //}
-  bytes_wrote = write(self->fd,buf,length);
-  if (bytes_wrote != length) {
-    g_set_error(error,G_IO_ERROR,G_IO_ERROR_INVALID_DATA,
-                            "Failed to write %d bytes, only wrote %d bytes",
-                            (gint32)length,(gint32)bytes_wrote);
-    return FALSE;
-  }
-  return TRUE;
+	if (lseek(self->fd, offset, SEEK_SET) != offset) {
+		g_set_error(error,
+			    G_IO_ERROR,
+			    G_IO_ERROR_INVALID_DATA,
+			    "Failed to lseek to 0x%x",
+			    offset);
+		return FALSE;
+	}
+	bytes_wrote = write(self->fd, buf, length);
+	if (bytes_wrote != length) {
+		g_set_error(error,
+			    G_IO_ERROR,
+			    G_IO_ERROR_INVALID_DATA,
+			    "Failed to write %d bytes, only wrote %d bytes",
+			    (gint32)length,
+			    (gint32)bytes_wrote);
+		return FALSE;
+	}
+	return TRUE;
 }

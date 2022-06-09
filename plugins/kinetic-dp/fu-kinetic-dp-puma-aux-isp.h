@@ -14,16 +14,17 @@
 
 #define FU_TYPE_KINETIC_DP_PUMA_AUX_ISP (fu_kinetic_dp_puma_aux_isp_get_type())
 G_DECLARE_FINAL_TYPE(FuKineticDpPumaAuxIsp,
-                                                      fu_kinetic_dp_puma_aux_isp,
-                                                      FU,
-                                                      KINETIC_DP_PUMA_AUX_ISP,
-                                                      FuKineticDpAuxIsp)
+		     fu_kinetic_dp_puma_aux_isp,
+		     FU,
+		     KINETIC_DP_PUMA_AUX_ISP,
+		     FuKineticDpAuxIsp)
 
-FuKineticDpPumaAuxIsp * fu_kinetic_dp_puma_aux_isp_new(void);
+FuKineticDpPumaAuxIsp *
+fu_kinetic_dp_puma_aux_isp_new(void);
 
 gboolean
 fu_kinetic_dp_puma_aux_isp_parse_app_fw(FuKineticDpFirmware *firmware,
-                                                                                                                                const guint8 *fw_bin_buf,
-                                                                                                                                const guint32 fw_bin_size,
-                                                                                                                                const guint16 fw_bin_flag,
-                                                                                                                                GError **error);
+					const guint8 *fw_bin_buf,
+					const guint32 fw_bin_size,
+					const guint16 fw_bin_flag,
+					GError **error);
