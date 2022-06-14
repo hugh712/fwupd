@@ -15,7 +15,6 @@ fu_kinetic_dp_aux_dpcd_read_oui(FuKineticDpConnection *connection,
 				guint32 buf_size,
 				GError **error)
 {
-	g_debug("aux dpcd read OUI...");
 	if (buf_size < DPCD_SIZE_IEEE_OUI) {
 		g_set_error(error,
 			    FWUPD_ERROR,
@@ -40,7 +39,6 @@ fu_kinetic_dp_aux_dpcd_write_oui(FuKineticDpConnection *connection,
 				 const guint8 *buf,
 				 GError **error)
 {
-	g_debug("aux dpcd write OUI...");
 	if (!fu_kinetic_dp_connection_write(connection,
 					    DPCD_ADDR_IEEE_OUI,
 					    buf,
@@ -58,7 +56,6 @@ fu_kinetic_dp_aux_dpcd_read_branch_id_str(FuKineticDpConnection *connection,
 					  guint32 buf_size,
 					  GError **error)
 {
-	g_debug("aux dpcd read branch_id_str...");
 	if (buf_size < DPCD_SIZE_BRANCH_DEV_ID_STR) {
 		g_set_error(error,
 			    FWUPD_ERROR,

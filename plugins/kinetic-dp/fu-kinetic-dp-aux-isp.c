@@ -91,8 +91,6 @@ fu_kinetic_dp_aux_isp_get_basic_dev_info_from_branch_id(const guint8 *br_id_str_
 			/* found the chip in the table */
 			dev_info->chip_id = kt_dp_branch_dev_info_table[i].chip_id;
 			dev_info->fw_run_state = kt_dp_branch_dev_info_table[i].fw_run_state;
-			g_debug("found %s in lookup table and got its Run State and Chip ID.",
-				kt_dp_branch_dev_info_table[i].id_str);
 			return TRUE;
 		}
 	}
@@ -183,7 +181,6 @@ fu_kinetic_dp_aux_isp_read_basic_device_info(FuKineticDpDevice *device,
 {
 	g_autoptr(FuKineticDpConnection) connection = NULL;
 	KtDpDevInfo dev_info_local;
-	g_debug("aux isp try to read Branch ID and figure basic device info from there");
 
 	dev_info_local.chip_id = KT_CHIP_NONE;
 	dev_info_local.chip_type = 0;
@@ -216,11 +213,11 @@ fu_kinetic_dp_aux_isp_read_basic_device_info(FuKineticDpDevice *device,
 	/* store read info to static allocated structure */
 	if (!fu_memcpy_safe((guint8 *)&dp_dev_infos[target_port],
 			    sizeof(dp_dev_infos[target_port]),
-			    0x0, /* dst */
+			    0x0,
 			    (guint8 *)&dev_info_local,
 			    sizeof(dev_info_local),
-			    0x0,		 /* src */
-			    sizeof(KtDpDevInfo), /*size */
+			    0x0,
+			    sizeof(KtDpDevInfo),
 			    error))
 		return FALSE;
 	/* assign pointer to specified structure to output parameter */
@@ -237,8 +234,6 @@ fu_kinetic_dp_aux_isp_get_device_info(FuKineticDpAuxIsp *self,
 	FuKineticDpAuxIspClass *klass = FU_KINETIC_DP_AUX_ISP_GET_CLASS(self);
 	g_return_val_if_fail(FU_IS_KINETIC_DP_AUX_ISP(self), FALSE);
 	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
-
-	g_debug("aux isp get device info...aux_isp_ctrl->get_device_info");
 
 	/* no chip-specific method */
 	if (klass->get_device_info == NULL) {
@@ -262,7 +257,6 @@ fu_kinetic_dp_aux_isp_start(FuKineticDpAuxIsp *self,
 	FuKineticDpAuxIspClass *klass = FU_KINETIC_DP_AUX_ISP_GET_CLASS(self);
 	g_return_val_if_fail(FU_IS_KINETIC_DP_AUX_ISP(self), FALSE);
 	g_return_val_if_fail(error == NULL || *error == NULL, FALSE);
-	g_debug("aux isp starts...  aux_isp_ctrl->start");
 
 	/* no chip-specific method */
 	if (klass->start == NULL) {
@@ -286,19 +280,16 @@ fu_kinetic_dp_aux_isp_init(FuKineticDpAuxIsp *self)
 
 	priv->root_dev_chip_id = KT_CHIP_NONE;
 	priv->root_dev_state = KT_FW_STATE_RUN_NONE;
-	g_debug("aux isp instance initialized.");
 }
 
 static void
 fu_kinetic_dp_aux_isp_class_init(FuKineticDpAuxIspClass *klass)
 {
-	g_debug("aux isp class initialized.");
 }
 
 FuKineticDpAuxIsp *
 fu_kinetic_dp_aux_isp_new(void)
 {
 	FuKineticDpAuxIsp *self = g_object_new(FU_TYPE_KINETIC_DP_AUX_ISP, NULL);
-	g_debug("instantiate aux_isp.");
 	return FU_KINETIC_DP_AUX_ISP(self);
 }

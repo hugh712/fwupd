@@ -31,7 +31,6 @@ G_DEFINE_TYPE(FuKineticDpDevice, fu_kinetic_dp_device, FU_TYPE_UDEV_DEVICE)
 FuKineticDpAuxIsp *
 fu_kinetic_dp_device_get_aux_isp_ctrl(FuKineticDpDevice *self)
 {
-	g_debug("device get aux isp ctrl.");
 	g_return_val_if_fail(FU_IS_DEVICE(self), NULL);
 	return self->aux_isp_ctrl;
 }
@@ -74,7 +73,6 @@ fu_kinetic_dp_device_init(FuKineticDpDevice *self)
 	fu_udev_device_set_flags(FU_UDEV_DEVICE(self),
 				 FU_UDEV_DEVICE_FLAG_OPEN_READ | FU_UDEV_DEVICE_FLAG_OPEN_WRITE |
 				     FU_UDEV_DEVICE_FLAG_VENDOR_FROM_PARENT);
-	g_debug("device instance initialized.");
 }
 
 static void
@@ -86,7 +84,6 @@ fu_kinetic_dp_device_finalize(GObject *object)
 		g_object_unref(self->aux_isp_ctrl);
 	g_free(self->system_type);
 	G_OBJECT_CLASS(fu_kinetic_dp_device_parent_class)->finalize(object);
-	g_debug("device instance finalized.");
 }
 
 /* make sure we selected the physical device */
@@ -94,7 +91,6 @@ static gboolean
 fu_kinetic_dp_device_probe(FuDevice *device, GError **error)
 {
 	g_debug("device probing...");
-
 	if (!FU_DEVICE_CLASS(fu_kinetic_dp_device_parent_class)->probe(device, error))
 		return FALSE;
 
@@ -117,8 +113,6 @@ fu_kinetic_dp_device_prepare_firmware(FuDevice *device,
 {
 	g_autoptr(FuFirmware) firmware = fu_kinetic_dp_firmware_new();
 
-	g_debug("device is preparing firmware package for write...");
-
 	/* parse input firmware file to two images */
 	if (!fu_firmware_parse(firmware, fw, flags, error))
 		return NULL;
@@ -137,7 +131,6 @@ fu_kinetic_dp_device_write_firmware(FuDevice *device,
 	FuKineticDpAuxIsp *aux_isp_ctrl = self->aux_isp_ctrl;
 
 	g_return_val_if_fail(aux_isp_ctrl != NULL, FALSE);
-	g_debug("device write firmware starts...");
 
 	/* main firmware write progress steps */
 	fu_progress_set_id(progress, G_STRLOC);
@@ -175,7 +168,6 @@ fu_kinetic_dp_device_rescan(FuDevice *device, GError **error)
 	guint8 buf_ver[16];
 	KtDpDevInfo *dp_dev_info = NULL;
 
-	g_debug("device rescanning...");
 	connection = fu_kinetic_dp_connection_new(fu_udev_device_get_fd(FU_UDEV_DEVICE(self)));
 
 	/* TODO: now only support to do ISP for Host chip */
@@ -270,7 +262,6 @@ fu_kinetic_dp_device_class_init(FuKineticDpDeviceClass *klass)
 	klass_device->write_firmware = fu_kinetic_dp_device_write_firmware;
 	klass_device->prepare_firmware = fu_kinetic_dp_device_prepare_firmware;
 	klass_device->probe = fu_kinetic_dp_device_probe;
-	g_debug("device class initialized.");
 }
 
 FuKineticDpDevice *
@@ -278,6 +269,5 @@ fu_kinetic_dp_device_new(FuUdevDevice *device)
 {
 	FuKineticDpDevice *self = g_object_new(FU_TYPE_KINETIC_DP_DEVICE, NULL);
 	fu_device_incorporate(FU_DEVICE(self), FU_DEVICE(device));
-	g_debug("device instantiated.");
 	return self;
 }

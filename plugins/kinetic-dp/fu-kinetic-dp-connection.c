@@ -26,13 +26,11 @@ G_DEFINE_TYPE(FuKineticDpConnection, fu_kinetic_dp_connection, G_TYPE_OBJECT)
 static void
 fu_kinetic_dp_connection_init(FuKineticDpConnection *self)
 {
-	g_debug("connection instance initialized.");
 }
 
 static void
 fu_kinetic_dp_connection_class_init(FuKineticDpConnectionClass *klass)
 {
-	g_debug("connection class initialized.");
 }
 
 FuKineticDpConnection *
@@ -40,7 +38,6 @@ fu_kinetic_dp_connection_new(gint fd)
 {
 	FuKineticDpConnection *self = g_object_new(FU_TYPE_KINETIC_DP_CONNECTION, NULL);
 	self->fd = fd;
-	g_debug("instantiate connection.");
 	return self;
 }
 

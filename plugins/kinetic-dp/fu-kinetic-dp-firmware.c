@@ -98,8 +98,6 @@ fu_kinetic_dp_firmware_get_chip_id_from_fw_buf(const guint8 *fw_bin_buf,
 				/* found corresponding app ID */
 				*chip_id = kt_dp_app_sign_id_table[i].chip_id;
 				*fw_bin_flag = kt_dp_app_sign_id_table[i].fw_bin_flag;
-				g_debug("Chip ID (%s) found in lookup table and f/w flags set.",
-					kt_dp_app_sign_id_table[i].app_id_str);
 				return TRUE;
 			}
 		}
@@ -305,7 +303,6 @@ guint32
 fu_kinetic_dp_firmware_get_valid_payload_size(const guint8 *payload_data, const guint32 data_size)
 {
 	guint32 i = 0;
-	g_debug("adjust payload size by not counting padded bytes...");
 	payload_data += data_size - 1; /* start searching from the end of payload */
 	while ((*(payload_data - i) == 0xFF) && (i < data_size))
 		i++;
@@ -330,7 +327,6 @@ fu_kinetic_dp_firmware_parse(FuFirmware *self,
 	g_autoptr(FuFirmware) isp_drv_img = NULL;
 	g_autoptr(FuFirmware) app_fw_img = NULL;
 
-	g_debug("firmware package parsing starts...");
 	/* parse firmware according to Kinetic's FW image format
 	 * FW binary = 4 bytes Header(Little-Endian) + ISP driver + App FW
 	 * 4 bytes Header: size of ISP driver */
@@ -338,16 +334,9 @@ fu_kinetic_dp_firmware_parse(FuFirmware *self,
 	if (!fu_common_read_uint32_safe(buf, bufsz, 0, &priv->isp_drv_size, G_LITTLE_ENDIAN, error))
 		return FALSE;
 
-	g_debug("extracted ISP driver payload size: 0x%x(%u)bytes",
-		priv->isp_drv_size,
-		priv->isp_drv_size);
-
 	/* app firmware payload size */
 	app_fw_payload_size =
 	    g_bytes_get_size(fw_bytes) - HEADER_LEN_ISP_DRV_SIZE - priv->isp_drv_size;
-	g_debug("calculated App firmware payload size: 0x%x(%u) bytes",
-		app_fw_payload_size,
-		app_fw_payload_size);
 
 	/* add ISP driver as a new image into firmware */
 	isp_drv_payload =
@@ -355,7 +344,6 @@ fu_kinetic_dp_firmware_parse(FuFirmware *self,
 	isp_drv_img = fu_firmware_new_from_bytes(isp_drv_payload);
 	fu_firmware_set_idx(isp_drv_img, FU_KT_FW_IMG_IDX_ISP_DRV);
 	fu_firmware_add_image(self, isp_drv_img);
-	g_debug("ISP driver image added to list");
 
 	/* add App FW as a new image into firmware */
 	app_fw_payload = g_bytes_new_from_bytes(fw_bytes,
@@ -363,7 +351,6 @@ fu_kinetic_dp_firmware_parse(FuFirmware *self,
 						app_fw_payload_size);
 
 	/* figure out which chip App FW it is for */
-	g_debug("figuring out what chip the App firmware is for");
 	buf = g_bytes_get_data(app_fw_payload, &bufsz);
 	if (!fu_kinetic_dp_firmware_get_chip_id_from_fw_buf(buf,
 							    bufsz,
@@ -375,11 +362,8 @@ fu_kinetic_dp_firmware_parse(FuFirmware *self,
 				    "no valid Chip ID is found in the firmware");
 		return FALSE;
 	}
-	g_debug("Chip ID found in App firmware image");
-
 	/* parse App FW based upon which chip it is for */
 	if (priv->chip_id == KT_CHIP_JAGUAR_5000 || priv->chip_id == KT_CHIP_MUSTANG_5200) {
-		g_debug("parsing Jaguar or Mustang App firmware starts...");
 		if (!fu_kinetic_dp_secure_aux_isp_parse_app_fw(firmware,
 							       buf,
 							       bufsz,
@@ -391,7 +375,6 @@ fu_kinetic_dp_firmware_parse(FuFirmware *self,
 			return FALSE;
 		}
 	} else if (priv->chip_id == KT_CHIP_PUMA_2900) {
-		g_debug("parsing Puma App firmware starts...");
 		if (!fu_kinetic_dp_puma_aux_isp_parse_app_fw(firmware,
 							     buf,
 							     bufsz,
@@ -407,11 +390,9 @@ fu_kinetic_dp_firmware_parse(FuFirmware *self,
 				    "found unsupported App firmware in firmware package.");
 		return FALSE;
 	}
-
 	app_fw_img = fu_firmware_new_from_bytes(app_fw_payload);
 	fu_firmware_set_idx(app_fw_img, FU_KT_FW_IMG_IDX_APP_FW);
 	fu_firmware_add_image(self, app_fw_img);
-	g_debug("App firmware image added to list");
 	return TRUE;
 }
 
@@ -428,7 +409,6 @@ fu_kinetic_dp_firmware_init(FuKineticDpFirmware *self)
 	priv->cmdb_block_size = 0;
 	priv->is_fw_esm_xip_enabled = FALSE;
 	priv->fw_bin_flag = 0;
-	g_debug("firmware instance initialized.");
 }
 
 static void
@@ -436,12 +416,10 @@ fu_kinetic_dp_firmware_class_init(FuKineticDpFirmwareClass *klass)
 {
 	FuFirmwareClass *klass_firmware = FU_FIRMWARE_CLASS(klass);
 	klass_firmware->parse = fu_kinetic_dp_firmware_parse;
-	g_debug("firmware class initialized.");
 }
 
 FuFirmware *
 fu_kinetic_dp_firmware_new(void)
 {
-	g_debug("instantiate firmware...");
 	return FU_FIRMWARE(g_object_new(FU_TYPE_KINETIC_DP_FIRMWARE, NULL));
 }

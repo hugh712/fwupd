@@ -54,7 +54,6 @@ static void
 fu_plugin_kinetic_dp_rescan(FuPlugin *plugin)
 {
 	FuPluginData *priv = fu_plugin_get_data(plugin);
-	g_debug("plugin rescan all devices...");
 	for (guint i = 0; i < priv->devices->len; i++) {
 		FuDevice *device = FU_DEVICE(g_ptr_array_index(priv->devices, i));
 		fu_plugin_kinetic_dp_device_rescan(plugin, device);
@@ -67,7 +66,6 @@ fu_plugin_kinetic_dp_rescan_cb(gpointer user_data)
 {
 	FuPlugin *plugin = FU_PLUGIN(user_data);
 	FuPluginData *priv = fu_plugin_get_data(plugin);
-	g_debug("plugin backend device changed callback to rescan.");
 	fu_plugin_kinetic_dp_rescan(plugin);
 	priv->drm_changed_id = 0;
 	return FALSE;
@@ -78,7 +76,6 @@ static gboolean
 fu_plugin_kinetic_dp_backend_device_changed(FuPlugin *plugin, FuDevice *device, GError **error)
 {
 	FuPluginData *priv = fu_plugin_get_data(plugin);
-	g_debug("plugin bankend device is changing...");
 
 	/* check to see if this is device we care about? */
 	if (!FU_IS_UDEV_DEVICE(device))
@@ -105,7 +102,6 @@ fu_plugin_kinetic_dp_backend_device_added(FuPlugin *plugin, FuDevice *device, GE
 	FuPluginData *priv = fu_plugin_get_data(plugin);
 	g_autoptr(FuDeviceLocker) locker = NULL;
 	g_autoptr(FuKineticDpDevice) dev = NULL;
-
 	g_debug("plugin adding backend device...");
 	/* check to see if this is device we care about? */
 	if (!FU_IS_UDEV_DEVICE(device))
@@ -141,7 +137,7 @@ fu_plugin_kinetic_dp_write_firmware(FuPlugin *plugin,
 				    GError **error)
 {
 	g_autoptr(FuDeviceLocker) locker = fu_device_locker_new(device, error);
-	g_debug("plugin write firmware starts...");
+
 	if (locker == NULL)
 		return FALSE;
 	if (!fu_device_write_firmware(device, blob_fw, progress, flags, error))
@@ -159,7 +155,6 @@ fu_plugin_kinetic_dp_init(FuPlugin *plugin)
 	fu_plugin_add_udev_subsystem(plugin, "drm");
 	fu_plugin_add_udev_subsystem(plugin, "drm_dp_aux_dev");
 	fu_plugin_add_firmware_gtype(plugin, NULL, FU_TYPE_KINETIC_DP_FIRMWARE);
-	g_debug("plugin instance initialized.");
 }
 
 static void
@@ -169,7 +164,6 @@ fu_plugin_kinetic_dp_destroy(FuPlugin *plugin)
 	if (priv->drm_changed_id != 0)
 		g_source_remove(priv->drm_changed_id);
 	g_ptr_array_unref(priv->devices);
-	g_debug("plugin instance destroyed.");
 }
 
 void
@@ -181,5 +175,4 @@ fu_plugin_init_vfuncs(FuPluginVfuncs *vfuncs)
 	vfuncs->write_firmware = fu_plugin_kinetic_dp_write_firmware;
 	vfuncs->backend_device_added = fu_plugin_kinetic_dp_backend_device_added;
 	vfuncs->backend_device_changed = fu_plugin_kinetic_dp_backend_device_changed;
-	g_debug("plugin virtual functions realized.");
 }

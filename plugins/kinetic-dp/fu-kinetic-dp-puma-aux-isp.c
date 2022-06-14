@@ -178,7 +178,6 @@ fu_kinetic_dp_puma_aux_isp_send_payload(FuKineticDpPumaAuxIspPrivate *priv,
 	guint32 write_size;
 	gboolean show_message;
 
-	g_debug("Sending payload size 0x%x...", payload_size);
 	while (remain_payload_len > 0) {
 		chunk_len = (remain_payload_len >= PUMA_DPCD_DATA_SIZE) ? PUMA_DPCD_DATA_SIZE
 									: remain_payload_len;
@@ -186,7 +185,6 @@ fu_kinetic_dp_puma_aux_isp_send_payload(FuKineticDpPumaAuxIspPrivate *priv,
 		/* send a maximum 32KB chunk of payload to AUX window */
 		chunk_remain_len = chunk_len;
 		chunk_offset = 0;
-		g_debug("Sending 0x%x data Chunk...", chunk_remain_len);
 		while (chunk_remain_len > 0) {
 			/* maximum length of each AUX write transaction is 16 bytes */
 			write_size = (chunk_remain_len >= 16) ? 16 : chunk_remain_len;
@@ -330,8 +328,6 @@ fu_kinetic_dp_puma_aux_isp_send_isp_drv(FuKineticDpPumaAuxIspPrivate *priv,
 					FuProgress *progress,
 					GError **error)
 {
-	g_debug("sending Puma ISP driver starts ...");
-
 	if (!fu_kinetic_dp_puma_aux_isp_enter_code_loading_mode(connection, error)) {
 		g_prefix_error(error, "enter code loading mode failed: ");
 		return FALSE;
@@ -569,7 +565,6 @@ fu_kinetic_dp_puma_aux_isp_get_device_info(FuKineticDpAuxIsp *self,
 	g_autoptr(FuKineticDpConnection) connection = NULL;
 	guint8 dpcd_buf[16] = {0};
 
-	g_debug("puma aux read device info(hw_ver, fw_ver, customer_id, customer_fw_ver, chip_id)");
 	connection = fu_kinetic_dp_connection_new(fu_udev_device_get_fd(FU_UDEV_DEVICE(device)));
 
 	/* chip ID, FW work state, and branch ID string are known */
@@ -636,9 +631,9 @@ fu_kinetic_dp_puma_aux_isp_start(FuKineticDpAuxIsp *self,
 	connection = fu_kinetic_dp_connection_new(fu_udev_device_get_fd(FU_UDEV_DEVICE(device)));
 
 	/* write MCA OUI */
-	if (!fu_kinetic_dp_aux_dpcd_write_oui(connection, mca_oui, error)) {
+	if (!fu_kinetic_dp_aux_dpcd_write_oui(connection, mca_oui, error))
 		goto PUMA_AUX_ISP_END;
-	}
+
 	fu_progress_step_done(progress);
 
 	/* only load driver if in IROM mode */
@@ -688,7 +683,6 @@ fu_kinetic_dp_puma_aux_isp_start(FuKineticDpAuxIsp *self,
 
 	/* send App FW image */
 	payload_data = g_bytes_get_data(app, &payload_len);
-	g_debug("sending App Firmware starts...");
 	if (!fu_kinetic_dp_puma_aux_isp_send_payload(priv_puma_aux_isp,
 						     connection,
 						     payload_data,
@@ -710,8 +704,8 @@ fu_kinetic_dp_puma_aux_isp_start(FuKineticDpAuxIsp *self,
 
 /* Note: not to reuse the GError below */
 PUMA_AUX_ISP_END:
-	fu_progress_sleep(progress, 2000);
-	/* send reset command */
+	fu_progress_sleep(progress, 3000);
+	/* send PUMA_CHIP_RESET_REQUEST command */
 	cmd = PUMA_CHIP_RESET_REQUEST;
 	if (!fu_kinetic_dp_connection_write(connection,
 					    PUMA_DPCD_SINK_MODE_REG,
@@ -721,11 +715,10 @@ PUMA_AUX_ISP_END:
 		g_prefix_error(
 		    error,
 		    "failed to write PUMA_DPCD_SINK_MODE_REG with PUMA_CHIP_RESET_REQUEST: ");
-		return FALSE;
 	} else {
+		g_debug("Reset sent.");
 		retcode = TRUE;
 	}
-	g_debug("reset sent.");
 	return retcode;
 }
 
@@ -747,7 +740,6 @@ fu_kinetic_dp_puma_aux_isp_parse_app_fw(FuKineticDpFirmware *firmware,
 	const guint8 *cmdb_buf;
 	guint8 checksum;
 
-	g_debug("parsing Puma app firmware specific..");
 	if (fw_bin_size < SIZE_512KB) {
 		g_set_error(error,
 			    FWUPD_ERROR,
@@ -773,7 +765,6 @@ fu_kinetic_dp_puma_aux_isp_parse_app_fw(FuKineticDpFirmware *firmware,
 	header = (guint8 *)(fw_bin_buf + 2);
 	while (object_count > 0) {
 		code_size += BYTES_TO_GUINT32(((HeaderInfoFormat *)header)->ObjectLength);
-		g_debug("code_size + ObjectLength = 0x%x(%u)", code_size, code_size);
 		header += sizeof(HeaderInfoFormat);
 		object_count--;
 	}
@@ -791,14 +782,11 @@ fu_kinetic_dp_puma_aux_isp_parse_app_fw(FuKineticDpFirmware *firmware,
 	std_fw_ver = (guint32)(fw_bin_buf[PUMA_FW_STD_VER_START_ADDR] << 8);	   /*minor*/
 	std_fw_ver += (guint32)(fw_bin_buf[PUMA_FW_STD_VER_START_ADDR + 1] << 16); /*major*/
 	std_fw_ver += (guint32)(fw_bin_buf[PUMA_FW_STD_VER_START_ADDR + 2]);	   /*rev*/
-	g_debug("extract App firmware version 0x%x", std_fw_ver);
 	fu_kinetic_dp_firmware_set_std_fw_ver(firmware, std_fw_ver);
 	/* get cmbd block info */
 	memcpy(cmdb_sig, &fw_bin_buf[PUMA_FW_CMDB_START_ADDR], PUMA_FW_CMDB_SIG_SIZE);
-	g_debug("signature to look for: %s", puma_std_cmdb_sig);
-	g_debug("signature parsed: %s", cmdb_sig);
 	if (memcmp(cmdb_sig, puma_std_cmdb_sig, PUMA_FW_CMDB_SIG_SIZE) == 0) {
-		g_debug("cmdb block found in App firmware.");
+		g_debug("cmdb block found in Puma App firmware.");
 		memcpy(&checksum, &fw_bin_buf[PUMA_FW_CMDB_REV_ADDR], PUMA_FW_CMDB_REV_SIZE);
 		checksum = (checksum << 1);
 		cmdb_buf = &fw_bin_buf[PUMA_FW_CMDB_START_ADDR];
@@ -807,23 +795,19 @@ fu_kinetic_dp_puma_aux_isp_parse_app_fw(FuKineticDpFirmware *firmware,
 			crc += cmdb_buf[i];
 
 		if (crc == checksum) {
-			g_debug("cmdb block checksum matched.");
 			fu_kinetic_dp_firmware_set_cmdb_block_size(firmware, PUMA_CMDB_SIZE);
-			g_debug("cmdb block size set.");
 			fu_kinetic_dp_firmware_set_cmdb_ver(
 			    firmware,
 			    (fw_bin_buf[PUMA_FW_CMDB_STD_VER_ADDR] << 8 |
 			     fw_bin_buf[PUMA_FW_CMDB_STD_VER_ADDR + 1]));
-			g_debug("cmdb std version set.");
 			fu_kinetic_dp_firmware_set_cmdb_rev(
 			    firmware,
 			    (fw_bin_buf[PUMA_FW_CMDB_REV_ADDR] << 16 |
 			     fw_bin_buf[PUMA_FW_CMDB_REV_ADDR + 1] << 8 |
 			     fw_bin_buf[PUMA_FW_CMDB_REV_ADDR + 2]));
-			g_debug("cmdb revision set.");
 		}
 	} else {
-		g_debug("cmdb block not found in App firmware.");
+		g_debug("cmdb block not found in Puma App firmware.");
 	}
 	return TRUE;
 }
@@ -839,7 +823,6 @@ fu_kinetic_dp_puma_aux_isp_init(FuKineticDpPumaAuxIsp *self)
 	priv->read_flash_prog_time = 10;
 	priv->flash_id = 0;
 	priv->flash_size = 0;
-	g_debug("puma isp_ctrl instance initialized.");
 }
 
 /**/
@@ -850,7 +833,6 @@ fu_kinetic_dp_puma_aux_isp_class_init(FuKineticDpPumaAuxIspClass *klass)
 
 	klass_aux_isp->get_device_info = fu_kinetic_dp_puma_aux_isp_get_device_info;
 	klass_aux_isp->start = fu_kinetic_dp_puma_aux_isp_start;
-	g_debug("puma isp_ctrl class initialized.");
 }
 
 /**/
@@ -858,6 +840,5 @@ FuKineticDpPumaAuxIsp *
 fu_kinetic_dp_puma_aux_isp_new(void)
 {
 	FuKineticDpPumaAuxIsp *self = g_object_new(FU_TYPE_KINETIC_DP_PUMA_AUX_ISP, NULL);
-	g_debug("instantiate puma_isp_ctrl.");
 	return FU_KINETIC_DP_PUMA_AUX_ISP(self);
 }

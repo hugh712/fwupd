@@ -296,7 +296,6 @@ fu_kinetic_dp_secure_aux_isp_enter_code_loading_mode(FuKineticDpConnection *self
 						     GError **error)
 {
 	guint8 status;
-	g_debug("enter isp driver loading mode");
 	if (is_app_mode)
 		/* send "DPCD_MCA_CMD_PREPARE_FOR_ISP_MODE" command first
 		 * to make DPCD 514writable */
@@ -376,21 +375,21 @@ fu_kinetic_dp_secure_aux_isp_send_payload(FuKineticDpSecureAuxIsp *self,
 	guint32 remain_payload_len = payload_size;
 	guint32 chunk_crc16;
 	guint32 chunk_len;
-	guint32 chunk_remaian_len;
+	guint32 chunk_remain_len;
 	guint32 chunk_offset;
 	guint8 status;
-	g_debug("sending payload...");
+
 	while (remain_payload_len > 0) {
 		chunk_len = (remain_payload_len >= DPCD_SIZE_KT_AUX_WIN) ? DPCD_SIZE_KT_AUX_WIN
 									 : remain_payload_len;
 
 		/* send a maximum 32KB chunk of payload to AUX window */
-		chunk_remaian_len = chunk_len;
+		chunk_remain_len = chunk_len;
 		chunk_offset = 0;
 
-		while (chunk_remaian_len > 0) {
+		while (chunk_remain_len > 0) {
 			/* maximum length of each AUX write transaction is 16 bytes */
-			guint32 aux_wr_size = (chunk_remaian_len >= 16) ? 16 : chunk_remaian_len;
+			guint32 aux_wr_size = (chunk_remain_len >= 16) ? 16 : chunk_remain_len;
 			if (!fu_kinetic_dp_connection_write(connection,
 							    DPCD_ADDR_KT_AUX_WIN + chunk_offset,
 							    remain_payload + chunk_offset,
@@ -402,7 +401,7 @@ fu_kinetic_dp_secure_aux_isp_send_payload(FuKineticDpSecureAuxIsp *self,
 				return FALSE;
 			}
 			chunk_offset += aux_wr_size;
-			chunk_remaian_len -= aux_wr_size;
+			chunk_remain_len -= aux_wr_size;
 		}
 
 		/* send the CRC16 of current 32KB chunk to DPCD_REPLY_DATA_REG */
@@ -493,7 +492,6 @@ fu_kinetic_dp_secure_aux_isp_execute_isp_drv(FuKineticDpSecureAuxIsp *self,
 	guint8 reply_data[6] = {0};
 
 	/* in Jaguar, it takes about 1000 ms to boot up and initialize */
-	g_debug("executing isp driver...");
 	priv->flash_id = 0;
 	priv->flash_size = 0;
 	priv->read_flash_prog_time = 10;
@@ -583,8 +581,6 @@ fu_kinetic_dp_secure_aux_isp_send_isp_drv(FuKineticDpSecureAuxIsp *self,
 {
 	FuKineticDpSecureAuxIspPrivate *priv = GET_PRIVATE(self);
 
-	g_debug("sending secure ISP driver...");
-
 	if (!fu_kinetic_dp_secure_aux_isp_enter_code_loading_mode(connection,
 								  is_app_mode,
 								  isp_drv_len,
@@ -645,8 +641,6 @@ fu_kinetic_dp_secure_aux_isp_enable_fw_update_mode(FuKineticDpFirmware *firmware
 {
 	guint8 status;
 	guint8 pl_size_data[12] = {0};
-
-	g_debug("entering app firmware loading mode...");
 
 	/* Send payload size to DPCD_MCA_REPLY_DATA_REG */
 	if (!fu_common_write_uint32_safe(pl_size_data,
@@ -730,7 +724,7 @@ fu_kinetic_dp_secure_aux_isp_send_app_fw(FuKineticDpSecureAuxIsp *self,
 	if (priv->is_isp_secure_auth_mode) {
 		/* Send ESM and App Certificates & RSA Signatures */
 		ptr = (guint8 *)fw_data;
-		g_debug("sending certificates and signatures...");
+		g_debug("sending Certificates and Signatures...");
 		if (!fu_kinetic_dp_secure_aux_isp_send_payload(self,
 							       device,
 							       connection,
@@ -748,7 +742,7 @@ fu_kinetic_dp_secure_aux_isp_send_app_fw(FuKineticDpSecureAuxIsp *self,
 	fu_progress_step_done(progress);
 
 	/* Send ESM code */
-	g_debug("sending ESM code...");
+	g_debug("sending ESM Code...");
 	ptr = (guint8 *)fw_data + SPI_ESM_PAYLOAD_START;
 	if (!fu_kinetic_dp_secure_aux_isp_send_payload(
 		self,
@@ -766,7 +760,7 @@ fu_kinetic_dp_secure_aux_isp_send_app_fw(FuKineticDpSecureAuxIsp *self,
 	fu_progress_step_done(progress);
 
 	/* Send App code */
-	g_debug("sending App code...");
+	g_debug("sending App Code...");
 	ptr = (guint8 *)fw_data + SPI_APP_PAYLOAD_START;
 	if (!fu_kinetic_dp_secure_aux_isp_send_payload(
 		self,
@@ -784,7 +778,7 @@ fu_kinetic_dp_secure_aux_isp_send_app_fw(FuKineticDpSecureAuxIsp *self,
 	fu_progress_step_done(progress);
 
 	/* Send App initialized data */
-	g_debug("sending App init data...");
+	g_debug("sending App Init Data...");
 	ptr = (guint8 *)fw_data + (fu_kinetic_dp_firmware_get_is_fw_esm_xip_enabled(firmware)
 				       ? SPI_APP_EXTEND_INIT_DATA_START
 				       : SPI_APP_NORMAL_INIT_DATA_START);
@@ -802,7 +796,7 @@ fu_kinetic_dp_secure_aux_isp_send_app_fw(FuKineticDpSecureAuxIsp *self,
 		return FALSE;
 	}
 	fu_progress_step_done(progress);
-	g_debug("sending cmdb block...");
+	g_debug("sending CMDB Block...");
 	if (fu_kinetic_dp_firmware_get_cmdb_block_size(firmware)) {
 		/* Send CMDB */
 		ptr = (guint8 *)fw_data + SPI_CMDB_BLOCK_START;
@@ -823,7 +817,7 @@ fu_kinetic_dp_secure_aux_isp_send_app_fw(FuKineticDpSecureAuxIsp *self,
 	fu_progress_step_done(progress);
 
 	/* Send Application Identifier */
-	g_debug("sending app identifier...");
+	g_debug("sending App ID data...");
 	ptr = (guint8 *)fw_data + SPI_APP_ID_DATA_START;
 	if (!fu_kinetic_dp_secure_aux_isp_send_payload(self,
 						       device,
@@ -895,7 +889,6 @@ static void
 fu_kinetic_dp_secure_aux_isp_send_reset_command(FuKineticDpConnection *connection)
 {
 	g_autoptr(GError) error_local = NULL;
-	g_debug("sending reset...");
 	if (!fu_kinetic_dp_secure_aux_isp_write_kt_prop_cmd(connection,
 							    KT_DPCD_CMD_RESET_SYSTEM,
 							    &error_local))
@@ -909,13 +902,10 @@ fu_kinetic_dp_secure_aux_isp_get_flash_bank_idx(FuKineticDpConnection *connectio
 	guint8 prev_src_oui[DPCD_SIZE_IEEE_OUI] = {0};
 	guint8 res = BANK_NONE;
 
-	g_debug("secure aux get active flash bank index");
-
 	if (!fu_kinetic_dp_aux_dpcd_read_oui(connection, prev_src_oui, sizeof(prev_src_oui), error))
 		return BANK_NONE;
 	if (!fu_kinetic_dp_secure_aux_isp_write_mca_oui(connection, error))
 		return BANK_NONE;
-	g_debug("secure aux sends request active flash bank");
 	if (fu_kinetic_dp_secure_aux_isp_send_kt_prop_cmd(connection,
 							  KT_DPCD_CMD_GET_ACTIVE_FLASH_BANK,
 							  100,
@@ -1004,8 +994,6 @@ fu_kinetic_dp_secure_aux_isp_get_device_info(FuKineticDpAuxIsp *self,
 	g_autoptr(FuKineticDpConnection) connection = NULL;
 	guint8 dpcd_buf[16] = {0};
 
-	g_debug(
-	    "secure aux read device info(hw_ver, fw_ver, customer_id, customer_fw_ver, chip_id)");
 	connection = fu_kinetic_dp_connection_new(fu_udev_device_get_fd(FU_UDEV_DEVICE(device)));
 
 	/* chip ID, FW work state, and branch ID string are known */
@@ -1167,7 +1155,6 @@ fu_kinetic_dp_secure_aux_isp_parse_app_fw(FuKineticDpFirmware *firmware,
 	guint32 app_code_block_size = APP_CODE_NORMAL_BLOCK_SIZE;
 	guint32 app_init_data_start_addr = SPI_APP_NORMAL_INIT_DATA_START;
 	guint32 std_fw_ver = 0, customer_fw_ver = 0;
-	g_debug("secure firmware image parsing...");
 
 	if (fw_bin_size != STD_FW_PAYLOAD_SIZE) {
 		g_set_error(error,
@@ -1234,7 +1221,6 @@ fu_kinetic_dp_secure_aux_isp_init(FuKineticDpSecureAuxIsp *self)
 	priv->flash_id = 0;
 	priv->flash_size = 0;
 	priv->is_isp_secure_auth_mode = TRUE;
-	g_debug("secure isp_ctrl instance initialized.");
 }
 
 static void
@@ -1244,13 +1230,11 @@ fu_kinetic_dp_secure_aux_isp_class_init(FuKineticDpSecureAuxIspClass *klass)
 
 	klass_aux_isp->get_device_info = fu_kinetic_dp_secure_aux_isp_get_device_info;
 	klass_aux_isp->start = fu_kinetic_dp_secure_aux_isp_start;
-	g_debug("secure isp_ctrl class initialized.");
 }
 
 FuKineticDpSecureAuxIsp *
 fu_kinetic_dp_secure_aux_isp_new(void)
 {
 	FuKineticDpSecureAuxIsp *self = g_object_new(FU_TYPE_KINETIC_DP_SECURE_AUX_ISP, NULL);
-	g_debug("instantiate secure_isp_ctrl.");
 	return FU_KINETIC_DP_SECURE_AUX_ISP(self);
 }
