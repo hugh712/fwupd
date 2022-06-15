@@ -111,7 +111,6 @@ fu_kinetic_dp_firmware_set_isp_drv_size(FuKineticDpFirmware *self, guint32 isp_d
 	FuKineticDpFirmwarePrivate *priv = GET_PRIVATE(self);
 	g_return_if_fail(FU_IS_KINETIC_DP_FIRMWARE(self));
 	priv->isp_drv_size = isp_drv_size;
-	g_debug("firmware set  isp driver size 0x%x(%u)", priv->isp_drv_size, priv->isp_drv_size);
 }
 
 guint32
@@ -128,7 +127,6 @@ fu_kinetic_dp_firmware_set_esm_payload_size(FuKineticDpFirmware *self, guint32 e
 	FuKineticDpFirmwarePrivate *priv = GET_PRIVATE(self);
 	g_return_if_fail(FU_IS_KINETIC_DP_FIRMWARE(self));
 	priv->esm_payload_size = esm_payload_size;
-	g_debug("firmware set esm size 0x%x(%u)", priv->esm_payload_size, priv->esm_payload_size);
 }
 
 guint32
@@ -145,9 +143,6 @@ fu_kinetic_dp_firmware_set_arm_app_code_size(FuKineticDpFirmware *self, guint32 
 	FuKineticDpFirmwarePrivate *priv = GET_PRIVATE(self);
 	g_return_if_fail(FU_IS_KINETIC_DP_FIRMWARE(self));
 	priv->arm_app_code_size = arm_app_code_size;
-	g_debug("firmware set arm code size 0x%x(%u)",
-		priv->arm_app_code_size,
-		priv->arm_app_code_size);
 }
 
 guint32
@@ -164,9 +159,6 @@ fu_kinetic_dp_firmware_set_app_init_data_size(FuKineticDpFirmware *self, guint16
 	FuKineticDpFirmwarePrivate *priv = GET_PRIVATE(self);
 	g_return_if_fail(FU_IS_KINETIC_DP_FIRMWARE(self));
 	priv->app_init_data_size = app_init_data_size;
-	g_debug("firmware set app init data size 0x%x(%u)",
-		priv->app_init_data_size,
-		priv->app_init_data_size);
 }
 
 guint16
@@ -183,9 +175,6 @@ fu_kinetic_dp_firmware_set_cmdb_block_size(FuKineticDpFirmware *self, guint16 cm
 	FuKineticDpFirmwarePrivate *priv = GET_PRIVATE(self);
 	g_return_if_fail(FU_IS_KINETIC_DP_FIRMWARE(self));
 	priv->cmdb_block_size = cmdb_block_size;
-	g_debug("firmware set cmdb block size 0x%x(%u)",
-		priv->cmdb_block_size,
-		priv->cmdb_block_size);
 }
 
 guint16
@@ -201,7 +190,6 @@ fu_kinetic_dp_firmware_set_cmdb_ver(FuKineticDpFirmware *self, guint16 version)
 	FuKineticDpFirmwarePrivate *priv = GET_PRIVATE(self);
 	g_return_if_fail(FU_IS_KINETIC_DP_FIRMWARE(self));
 	priv->cmdb_version = version;
-	g_debug("firmware set cmdb version  %u", priv->cmdb_version);
 }
 
 guint16
@@ -218,7 +206,6 @@ fu_kinetic_dp_firmware_set_cmdb_rev(FuKineticDpFirmware *self, guint32 revision)
 	FuKineticDpFirmwarePrivate *priv = GET_PRIVATE(self);
 	g_return_if_fail(FU_IS_KINETIC_DP_FIRMWARE(self));
 	priv->cmdb_revision = revision;
-	g_debug("firmware set cmdb revision 0x%u", priv->cmdb_revision);
 }
 
 guint32
@@ -236,7 +223,6 @@ fu_kinetic_dp_firmware_set_is_fw_esm_xip_enabled(FuKineticDpFirmware *self,
 	FuKineticDpFirmwarePrivate *priv = GET_PRIVATE(self);
 	g_return_if_fail(FU_IS_KINETIC_DP_FIRMWARE(self));
 	priv->is_fw_esm_xip_enabled = is_fw_esm_xip_enabled;
-	g_debug("firmware set esm xip enabled.");
 }
 
 gboolean
@@ -253,7 +239,6 @@ fu_kinetic_dp_firmware_set_std_fw_ver(FuKineticDpFirmware *self, guint32 std_fw_
 	FuKineticDpFirmwarePrivate *priv = GET_PRIVATE(self);
 	g_return_if_fail(FU_IS_KINETIC_DP_FIRMWARE(self));
 	priv->std_fw_ver = std_fw_ver;
-	g_debug("firmware set fw version 0x%x", priv->std_fw_ver);
 }
 
 guint32
@@ -270,7 +255,6 @@ fu_kinetic_dp_firmware_set_customer_fw_ver(FuKineticDpFirmware *self, guint32 cu
 	FuKineticDpFirmwarePrivate *priv = GET_PRIVATE(self);
 	g_return_if_fail(FU_IS_KINETIC_DP_FIRMWARE(self));
 	priv->customer_fw_ver = customer_fw_ver;
-	g_debug("firmware set customer fw version 0x%x", priv->customer_fw_ver);
 }
 
 guint32
@@ -288,7 +272,6 @@ fu_kinetic_dp_firmware_set_customer_project_id(FuKineticDpFirmware *self,
 	FuKineticDpFirmwarePrivate *priv = GET_PRIVATE(self);
 	g_return_if_fail(FU_IS_KINETIC_DP_FIRMWARE(self));
 	priv->customer_project_id = customer_project_id;
-	g_debug("firmware set customer proj ID 0x%x ", priv->customer_project_id);
 }
 
 guint8
