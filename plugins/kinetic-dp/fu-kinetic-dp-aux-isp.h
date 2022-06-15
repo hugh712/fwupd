@@ -84,8 +84,6 @@ struct _FuKineticDpAuxIspClass {
 			  FuProgress *progress,
 			  const KtDpDevInfo *dev_info,
 			  GError **error);
-	/*< private >*/
-	gpointer padding[10];
 };
 
 FuKineticDpAuxIsp *
