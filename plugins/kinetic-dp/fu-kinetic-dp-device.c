@@ -217,9 +217,7 @@ fu_kinetic_dp_device_rescan(FuDevice *device, GError **error)
 
 	/* set up the device name */
 	chip_id = fu_kinetic_dp_aux_isp_get_chip_id_str(dp_dev_info->chip_id);
-	name = g_strdup_printf("%s", chip_id);
-	g_debug("device name %s", name);
-	fu_device_set_name(FU_DEVICE(self), name);
+	fu_device_set_name(FU_DEVICE(self), chip_id);
 
 	/* detect chip family */
 	self->family = fu_kinetic_dp_chip_id_to_family(dp_dev_info->chip_id);
