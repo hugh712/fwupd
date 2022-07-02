@@ -1,0 +1,13 @@
+<firmware gtype="FuFitFirmware">
+  <vendor>0x1234</vendor>
+  <version_raw>0x1234</version_raw> <!-- hdrver -->
+  <idx>0x1234</idx> <!-- CPUID -->
+  <firmware>
+    <idx>0x1</idx>
+    <id>one</id>
+  </firmware>
+  <firmware>
+    <id>two</id>
+    <addr>0x7</addr>
+  </firmware>
+</firmware>

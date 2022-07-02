@@ -347,6 +347,7 @@ def _build(bld: Builder) -> None:
     # built in formats
     for fzr in [
         Fuzzer("dfuse"),
+        Fuzzer("fit"),
         Fuzzer("fmap"),
         Fuzzer("ihex"),
         Fuzzer("srec"),

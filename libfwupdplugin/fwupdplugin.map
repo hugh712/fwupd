@@ -933,6 +933,8 @@ LIBFWUPDPLUGIN_1.8.2 {
     fu_dump_raw;
     fu_efivar_secure_boot_enabled;
     fu_firmware_parse_full;
+    fu_fit_firmware_get_type;
+    fu_fit_firmware_new;
     fu_i2c_device_read;
     fu_i2c_device_write;
     fu_ifwi_cpd_firmware_get_type;

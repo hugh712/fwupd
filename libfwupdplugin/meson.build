@@ -30,6 +30,7 @@ fwupdplugin_src = [
   'fu-device-locker.c',     # fuzzing
   'fu-device.c',            # fuzzing
   'fu-dfu-firmware.c',      # fuzzing
+  'fu-fit-firmware.c',      # fuzzing
   'fu-ifwi-cpd-firmware.c', # fuzzing
   'fu-ifwi-fpt-firmware.c', # fuzzing
   'fu-oprom-firmware.c',    # fuzzing
@@ -117,6 +118,7 @@ fwupdplugin_headers = [
   'fu-device-metadata.h',
   'fu-device-locker.h',
   'fu-dfu-firmware.h',
+  'fu-fit-firmware.h',
   'fu-ifwi-cpd-firmware.h',
   'fu-ifwi-fpt-firmware.h',
   'fu-oprom-firmware.h',
