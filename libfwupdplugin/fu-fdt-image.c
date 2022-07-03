@@ -47,12 +47,12 @@ fu_fdt_image_export(FuFirmware *firmware, FuFirmwareExportFlags flags, XbBuilder
 }
 
 /**
- * fu_fdt_image_set_prop:
+ * fu_fdt_image_get_props:
  * @self: a #FuFdtImage
  *
- * Sets the CPUID.
+ * Gets all the properties stored on the image.
  *
- * Returns: (transfer container) (element-type utf-8): keys
+ * Returns: (transfer container) (element-type utf8): keys
  *
  * Since: 1.8.2
  **/
