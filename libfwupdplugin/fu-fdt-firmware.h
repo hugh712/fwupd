@@ -17,7 +17,7 @@ struct _FuFdtFirmwareClass {
 
 FuFirmware *
 fu_fdt_firmware_new(void);
-guint16
-fu_fdt_firmware_get_vid(FuFdtFirmware *self);
+guint32
+fu_fdt_firmware_get_cpuid(FuFdtFirmware *self);
 void
-fu_fdt_firmware_set_vid(FuFdtFirmware *self, guint16 vid);
+fu_fdt_firmware_set_cpuid(FuFdtFirmware *self, guint32 cpuid);

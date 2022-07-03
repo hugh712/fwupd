@@ -1,7 +1,7 @@
 <firmware gtype="FuFdtFirmware">
   <vendor>0x1234</vendor>
   <version_raw>0x1234</version_raw> <!-- hdrver -->
-  <idx>0x1234</idx> <!-- CPUID -->
+  <cpuid>0x1234</cpuid>
   <firmware>
     <idx>0x1</idx>
     <id>one</id>
