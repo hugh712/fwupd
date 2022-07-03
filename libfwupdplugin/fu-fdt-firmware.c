@@ -15,13 +15,13 @@
 #include "fu-common.h"
 #include "fu-crc.h"
 #include "fu-dump.h"
-#include "fu-fit-firmware.h"
+#include "fu-fdt-firmware.h"
 #include "fu-mem.h"
 
 /**
- * FuFitFirmware:
+ * FuFdtFirmware:
  *
- * A Flattened Devicetree firmware image.
+ * A Flattened DeviceTree firmware image.
  *
  * Documented:
  * https://devicetree-specification.readthedocs.io/en/latest/chapter5-flattened-format.html
@@ -31,10 +31,10 @@
 
 typedef struct {
 	guint16 vid;
-} FuFitFirmwarePrivate;
+} FuFdtFirmwarePrivate;
 
-G_DEFINE_TYPE_WITH_PRIVATE(FuFitFirmware, fu_fit_firmware, FU_TYPE_FIRMWARE)
-#define GET_PRIVATE(o) (fu_fit_firmware_get_instance_private(o))
+G_DEFINE_TYPE_WITH_PRIVATE(FuFdtFirmware, fu_fdt_firmware, FU_TYPE_FIRMWARE)
+#define GET_PRIVATE(o) (fu_fdt_firmware_get_instance_private(o))
 
 typedef struct __attribute__((packed)) {
 	guint32 magic;
@@ -59,7 +59,7 @@ typedef struct __attribute__((packed)) {
 	guint32 nameoff;
 } FuFdtProp;
 
-#define FIT_MAGIC      0xd00dfeed
+#define FDT_MAGIC      0xd00dfeed
 #define FDT_BEGIN_NODE 0x00000001
 #define FDT_END_NODE   0x00000002
 #define FDT_PROP       0x00000003
@@ -83,16 +83,16 @@ fu_string_new_safe(const guint8 *buf, gsize bufsz, gsize offset, GError **error)
 }
 
 static void
-fu_fit_firmware_export(FuFirmware *firmware, FuFirmwareExportFlags flags, XbBuilderNode *bn)
+fu_fdt_firmware_export(FuFirmware *firmware, FuFirmwareExportFlags flags, XbBuilderNode *bn)
 {
-	FuFitFirmware *self = FU_FIT_FIRMWARE(firmware);
-	FuFitFirmwarePrivate *priv = GET_PRIVATE(self);
+	FuFdtFirmware *self = FU_FDT_FIRMWARE(firmware);
+	FuFdtFirmwarePrivate *priv = GET_PRIVATE(self);
 	fu_xmlb_builder_insert_kx(bn, "vid", priv->vid);
 }
 
 /**
- * fu_fit_firmware_get_vid:
- * @self: a #FuFitFirmware
+ * fu_fdt_firmware_get_vid:
+ * @self: a #FuFdtFirmware
  *
  * Gets the vid ID, or 0xffff for no restriction.
  *
@@ -101,16 +101,16 @@ fu_fit_firmware_export(FuFirmware *firmware, FuFirmwareExportFlags flags, XbBuil
  * Since: 1.8.2
  **/
 guint16
-fu_fit_firmware_get_vid(FuFitFirmware *self)
+fu_fdt_firmware_get_vid(FuFdtFirmware *self)
 {
-	FuFitFirmwarePrivate *priv = GET_PRIVATE(self);
-	g_return_val_if_fail(FU_IS_FIT_FIRMWARE(self), 0x0);
+	FuFdtFirmwarePrivate *priv = GET_PRIVATE(self);
+	g_return_val_if_fail(FU_IS_FDT_FIRMWARE(self), 0x0);
 	return priv->vid;
 }
 
 /**
- * fu_fit_firmware_set_vid:
- * @self: a #FuFitFirmware
+ * fu_fdt_firmware_set_vid:
+ * @self: a #FuFdtFirmware
  * @vid: vid ID, or 0xffff if the firmware should match any vid
  *
  * Sets the vid ID.
@@ -118,15 +118,15 @@ fu_fit_firmware_get_vid(FuFitFirmware *self)
  * Since: 1.8.2
  **/
 void
-fu_fit_firmware_set_vid(FuFitFirmware *self, guint16 vid)
+fu_fdt_firmware_set_vid(FuFdtFirmware *self, guint16 vid)
 {
-	FuFitFirmwarePrivate *priv = GET_PRIVATE(self);
-	g_return_if_fail(FU_IS_FIT_FIRMWARE(self));
+	FuFdtFirmwarePrivate *priv = GET_PRIVATE(self);
+	g_return_if_fail(FU_IS_FDT_FIRMWARE(self));
 	priv->vid = vid;
 }
 
 static gboolean
-fu_fit_firmware_parse_dt_struct(FuFitFirmware *self, GBytes *fw, GHashTable *strtab, GError **error)
+fu_fdt_firmware_parse_dt_struct(FuFdtFirmware *self, GBytes *fw, GHashTable *strtab, GError **error)
 {
 	gsize bufsz = 0;
 	gsize offset = 0;
@@ -134,7 +134,7 @@ fu_fit_firmware_parse_dt_struct(FuFitFirmware *self, GBytes *fw, GHashTable *str
 	const guint8 *buf = g_bytes_get_data(fw, &bufsz);
 
 	/* debug */
-	if (g_getenv("FU_FIT_FIRMWARE_VERBOSE") != NULL)
+	if (g_getenv("FU_FDT_FIRMWARE_VERBOSE") != NULL)
 		fu_dump_bytes(G_LOG_DOMAIN, "dt_struct", fw);
 
 	/* parse */
@@ -158,12 +158,10 @@ fu_fit_firmware_parse_dt_struct(FuFitFirmware *self, GBytes *fw, GHashTable *str
 		}
 
 		/* nothing to do */
-		if (token == FDT_NOP) {
-			g_warning("FDT_NOP");
+		if (token == FDT_NOP)
 			continue;
-		}
 
-		/* END NODE */
+		/* END */
 		if (token == FDT_END) {
 			has_end = TRUE;
 			break;
@@ -180,7 +178,7 @@ fu_fit_firmware_parse_dt_struct(FuFitFirmware *self, GBytes *fw, GHashTable *str
 			continue;
 		}
 
-		/* END */
+		/* END NODE */
 		if (token == FDT_END_NODE) {
 			g_warning("FDT_END_NODE");
 			continue;
@@ -243,23 +241,23 @@ fu_fit_firmware_parse_dt_struct(FuFitFirmware *self, GBytes *fw, GHashTable *str
 		return FALSE;
 	}
 
-	//	FuFitFirmwarePrivate *priv = GET_PRIVATE(self);
+	//	FuFdtFirmwarePrivate *priv = GET_PRIVATE(self);
 	/* success */
 	return TRUE;
 }
 
 static gboolean
-fu_fit_firmware_parse_dt_strings(FuFitFirmware *self,
+fu_fdt_firmware_parse_dt_strings(FuFdtFirmware *self,
 				 GBytes *fw,
 				 GHashTable *strtab,
 				 GError **error)
 {
-	//	FuFitFirmwarePrivate *priv = GET_PRIVATE(self);
+	//	FuFdtFirmwarePrivate *priv = GET_PRIVATE(self);
 	gsize bufsz = 0;
 	const guint8 *buf = g_bytes_get_data(fw, &bufsz);
 
 	/* debug */
-	if (g_getenv("FU_FIT_FIRMWARE_VERBOSE") != NULL)
+	if (g_getenv("FU_FDT_FIRMWARE_VERBOSE") != NULL)
 		fu_dump_bytes(G_LOG_DOMAIN, "dt_strings", fw);
 
 	/* parse */
@@ -286,7 +284,7 @@ fu_fit_firmware_parse_dt_strings(FuFitFirmware *self,
 }
 
 static gboolean
-fu_fit_firmware_parse_mem_rsvmap(FuFitFirmware *self,
+fu_fdt_firmware_parse_mem_rsvmap(FuFdtFirmware *self,
 				 const guint8 *buf,
 				 gsize bufsz,
 				 gsize offset,
@@ -319,13 +317,13 @@ fu_fit_firmware_parse_mem_rsvmap(FuFitFirmware *self,
 }
 
 static gboolean
-fu_fit_firmware_parse(FuFirmware *firmware,
+fu_fdt_firmware_parse(FuFirmware *firmware,
 		      GBytes *fw,
 		      gsize offset,
 		      FwupdInstallFlags flags,
 		      GError **error)
 {
-	FuFitFirmware *self = FU_FIT_FIRMWARE(firmware);
+	FuFdtFirmware *self = FU_FDT_FIRMWARE(firmware);
 	guint32 magic = 0;
 	guint32 totalsize = 0;
 	gsize bufsz = 0;
@@ -348,13 +346,13 @@ fu_fit_firmware_parse(FuFirmware *firmware,
 				    G_BIG_ENDIAN,
 				    error))
 		return FALSE;
-	if (magic != FIT_MAGIC) {
+	if (magic != FDT_MAGIC) {
 		g_set_error(error,
 			    G_IO_ERROR,
 			    G_IO_ERROR_INVALID_DATA,
 			    "invalid magic 0x%x, expected 0x%x",
 			    magic,
-			    (guint)FIT_MAGIC);
+			    (guint)FDT_MAGIC);
 		return FALSE;
 	}
 	if (!fu_memread_uint32_safe(buf,
@@ -396,7 +394,7 @@ fu_fit_firmware_parse(FuFirmware *firmware,
 		dt_strings = fu_bytes_new_offset(fw, off_dt_strings, size_dt_strings, error);
 		if (dt_strings == NULL)
 			return FALSE;
-		if (!fu_fit_firmware_parse_dt_strings(self, dt_strings, strtab, error))
+		if (!fu_fdt_firmware_parse_dt_strings(self, dt_strings, strtab, error))
 			return FALSE;
 	}
 
@@ -420,7 +418,7 @@ fu_fit_firmware_parse(FuFirmware *firmware,
 		dt_struct = fu_bytes_new_offset(fw, off_dt_struct, size_dt_struct, error);
 		if (dt_struct == NULL)
 			return FALSE;
-		if (!fu_fit_firmware_parse_dt_struct(self, dt_struct, strtab, error))
+		if (!fu_fdt_firmware_parse_dt_struct(self, dt_struct, strtab, error))
 			return FALSE;
 	}
 
@@ -433,7 +431,7 @@ fu_fit_firmware_parse(FuFirmware *firmware,
 				    error))
 		return FALSE;
 	if (off_mem_rsvmap != 0x0) {
-		if (!fu_fit_firmware_parse_mem_rsvmap(self, buf, bufsz, off_mem_rsvmap, error))
+		if (!fu_fdt_firmware_parse_mem_rsvmap(self, buf, bufsz, off_mem_rsvmap, error))
 			return FALSE;
 	}
 
@@ -478,15 +476,15 @@ fu_fit_firmware_parse(FuFirmware *firmware,
 }
 
 static GBytes *
-fu_fit_firmware_write(FuFirmware *firmware, GError **error)
+fu_fdt_firmware_write(FuFirmware *firmware, GError **error)
 {
 	g_autoptr(GByteArray) buf = g_byte_array_new();
 
-	//	FuFitFirmware *self = FU_FIT_FIRMWARE(firmware);
+	//	FuFdtFirmware *self = FU_FDT_FIRMWARE(firmware);
 	//	g_autoptr(GPtrArray) images = fu_firmware_get_images(firmware);
 	//	g_autoptr(GBytes) fw = NULL;
 
-	fu_byte_array_append_uint32(buf, FIT_MAGIC, G_BIG_ENDIAN);
+	fu_byte_array_append_uint32(buf, FDT_MAGIC, G_BIG_ENDIAN);
 	fu_byte_array_append_uint32(buf, 0x0, G_BIG_ENDIAN); /* totalsize */
 	fu_byte_array_append_uint32(buf, 0x0, G_BIG_ENDIAN); /* off_dt_struct */
 	fu_byte_array_append_uint32(buf, 0x0, G_BIG_ENDIAN); /* off_dt_strings */
@@ -502,10 +500,10 @@ fu_fit_firmware_write(FuFirmware *firmware, GError **error)
 }
 
 static gboolean
-fu_fit_firmware_build(FuFirmware *firmware, XbNode *n, GError **error)
+fu_fdt_firmware_build(FuFirmware *firmware, XbNode *n, GError **error)
 {
-	FuFitFirmware *self = FU_FIT_FIRMWARE(firmware);
-	FuFitFirmwarePrivate *priv = GET_PRIVATE(self);
+	FuFdtFirmware *self = FU_FDT_FIRMWARE(firmware);
+	FuFdtFirmwarePrivate *priv = GET_PRIVATE(self);
 	guint64 tmp;
 
 	/* optional properties */
@@ -518,32 +516,32 @@ fu_fit_firmware_build(FuFirmware *firmware, XbNode *n, GError **error)
 }
 
 static void
-fu_fit_firmware_init(FuFitFirmware *self)
+fu_fdt_firmware_init(FuFdtFirmware *self)
 {
-	//	FuFitFirmwarePrivate *priv = GET_PRIVATE(self);
+	//	FuFdtFirmwarePrivate *priv = GET_PRIVATE(self);
 	fu_firmware_add_flag(FU_FIRMWARE(self), FU_FIRMWARE_FLAG_HAS_CHECKSUM);
 	fu_firmware_add_flag(FU_FIRMWARE(self), FU_FIRMWARE_FLAG_HAS_VID_PID);
 }
 
 static void
-fu_fit_firmware_class_init(FuFitFirmwareClass *klass)
+fu_fdt_firmware_class_init(FuFdtFirmwareClass *klass)
 {
 	FuFirmwareClass *klass_firmware = FU_FIRMWARE_CLASS(klass);
-	klass_firmware->export = fu_fit_firmware_export;
-	klass_firmware->parse = fu_fit_firmware_parse;
-	klass_firmware->write = fu_fit_firmware_write;
-	klass_firmware->build = fu_fit_firmware_build;
+	klass_firmware->export = fu_fdt_firmware_export;
+	klass_firmware->parse = fu_fdt_firmware_parse;
+	klass_firmware->write = fu_fdt_firmware_write;
+	klass_firmware->build = fu_fdt_firmware_build;
 }
 
 /**
- * fu_fit_firmware_new:
+ * fu_fdt_firmware_new:
  *
- * Creates a new #FuFirmware of sub type Fit
+ * Creates a new #FuFirmware of sub type FDT
  *
  * Since: 1.8.2
  **/
 FuFirmware *
-fu_fit_firmware_new(void)
+fu_fdt_firmware_new(void)
 {
-	return FU_FIRMWARE(g_object_new(FU_TYPE_FIT_FIRMWARE, NULL));
+	return FU_FIRMWARE(g_object_new(FU_TYPE_FDT_FIRMWARE, NULL));
 }
