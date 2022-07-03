@@ -8,8 +8,6 @@
 
 #include "config.h"
 
-//#include <string.h>
-
 #include "fu-byte-array.h"
 #include "fu-bytes.h"
 #include "fu-common.h"
@@ -60,7 +58,7 @@ typedef struct __attribute__((packed)) {
 	guint32 nameoff;
 } FuFdtProp;
 
-#define FDT_MAGIC      0xd00dfeed
+#define FDT_MAGIC      0xD00DFEED
 #define FDT_BEGIN_NODE 0x00000001
 #define FDT_END_NODE   0x00000002
 #define FDT_PROP       0x00000003
@@ -189,7 +187,7 @@ fu_fdt_firmware_parse_dt_struct(FuFdtFirmware *self, GBytes *fw, GHashTable *str
 			//(guint)str->len);
 			offset += str->len + 1;
 
-			image = fu_firmware_new();
+			image = fu_fdt_image_new();
 			if (str->len > 0)
 				fu_firmware_set_id(image, str->str);
 			fu_firmware_set_offset(image, offset);
@@ -217,6 +215,25 @@ fu_fdt_firmware_parse_dt_struct(FuFdtFirmware *self, GBytes *fw, GHashTable *str
 			guint32 prop_len = 0;
 			guint32 prop_nameoff = 0;
 			gpointer value = NULL;
+			g_autoptr(GBytes) blob = NULL;
+
+			/* sanity check */
+			if (firmware_current == NULL) {
+				g_set_error_literal(error,
+						    G_IO_ERROR,
+						    G_IO_ERROR_INVALID_DATA,
+						    "got PROP with no node");
+				return FALSE;
+			}
+			if (firmware_current == FU_FIRMWARE(self)) {
+				g_set_error_literal(error,
+						    G_IO_ERROR,
+						    G_IO_ERROR_INVALID_DATA,
+						    "got PROP with unopen node");
+				return FALSE;
+			}
+
+			/* parse */
 			if (!fu_memread_uint32_safe(buf,
 						    bufsz,
 						    offset + G_STRUCT_OFFSET(FuFdtProp, len),
@@ -246,7 +263,13 @@ fu_fdt_firmware_parse_dt_struct(FuFdtFirmware *self, GBytes *fw, GHashTable *str
 					    prop_nameoff);
 				return FALSE;
 			}
+			blob = fu_bytes_new_offset(fw, offset, prop_len, error);
+			if (blob == NULL)
+				return FALSE;
 			g_warning("FDT_PROP: %s [0x%x]", (const gchar *)value, prop_len);
+			fu_fdt_image_set_prop(FU_FDT_IMAGE(firmware_current),
+					      (const gchar *)value,
+					      blob);
 			continue;
 		}
 

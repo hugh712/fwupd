@@ -12,7 +12,7 @@
 
 //#include "fu-byte-array.h"
 //#include "fu-bytes.h"
-//#include "fu-common.h"
+#include "fu-common.h"
 #include "fu-fdt-image.h"
 
 /**
@@ -35,14 +35,12 @@ fu_fdt_image_export(FuFirmware *firmware, FuFirmwareExportFlags flags, XbBuilder
 {
 	FuFdtImage *self = FU_FDT_IMAGE(firmware);
 	FuFdtImagePrivate *priv = GET_PRIVATE(self);
-	//	fu_xmlb_builder_insert_kx(bn, "cpuid", priv->cpuid);
-
 	GHashTableIter iter;
 	gpointer key, value;
 
 	g_hash_table_iter_init(&iter, priv->hash_props);
 	while (g_hash_table_iter_next(&iter, &key, &value)) {
-		// FIXME: do something with key and value
+		fu_xmlb_builder_insert_kx(bn, key, g_bytes_get_size(value));
 	}
 }
 
